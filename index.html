@@ -43,10 +43,11 @@
         .card-value {
             font-weight: bold;
         }
-        .buttons {
+        .game-controls {
             margin-top: 20px;
+            margin-bottom: 20px;
         }
-        .buttons button {
+        .game-controls button, .buttons button {
             padding: 15px 30px;
             margin: 0 10px;
             font-size: 1.2em;
@@ -56,14 +57,26 @@
             color: white;
             transition: background-color 0.3s ease;
         }
+        #btnIniciar {
+            background-color: #2196F3; /* Azul */
+        }
+        #btnIniciar:hover {
+            background-color: #1976D2;
+        }
+        #btnEncerrar {
+            background-color: #f44336; /* Vermelho */
+        }
+        #btnEncerrar:hover {
+            background-color: #da190b;
+        }
         #btnMaior {
-            background-color: #4CAF50;
+            background-color: #4CAF50; /* Verde */
         }
         #btnMaior:hover {
             background-color: #45a049;
         }
         #btnMenor {
-            background-color: #f44336;
+            background-color: #f44336; /* Vermelho */
         }
         #btnMenor:hover {
             background-color: #da190b;
@@ -81,17 +94,25 @@
             visibility: visible;
             opacity: 1;
         }
+        .disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Jogo de Probabilidade</h1>
+        <div class="game-controls">
+            <button id="btnIniciar">Iniciar Jogo</button>
+            <button id="btnEncerrar" class="disabled">Encerrar Jogo</button>
+        </div>
         <div id="pontuacao">Pontuação: 0</div>
         <div class="card" id="cartaAtual">
             <span class="card-value" id="cardValue">?</span>
         </div>
-        <p>A próxima carta será maior ou menor?</p>
-        <div class="buttons">
+        <p id="pergunta" class="hidden">A próxima carta será maior ou menor?</p>
+        <div class="buttons hidden">
             <button id="btnMaior">MAIOR</button>
             <button id="btnMenor">MENOR</button>
         </div>
@@ -103,13 +124,18 @@
             const cardValueElement = document.getElementById('cardValue');
             const pontuacaoElement = document.getElementById('pontuacao');
             const mensagemElement = document.getElementById('mensagem');
+            const btnIniciar = document.getElementById('btnIniciar');
+            const btnEncerrar = document.getElementById('btnEncerrar');
             const btnMaior = document.getElementById('btnMaior');
             const btnMenor = document.getElementById('btnMenor');
             const cartaAtualElement = document.getElementById('cartaAtual');
+            const perguntaElement = document.getElementById('pergunta');
+            const botoesPalpite = document.querySelector('.buttons');
 
             let baralho;
             let cartaAtual;
             let pontuacao = 0;
+            let jogoAtivo = false;
 
             const valoresMap = { 'J': 11, 'Q': 12, 'K': 13, 'A': 14 };
 
@@ -119,7 +145,7 @@
                 let baralho = [];
                 for (let naipe of naipes) {
                     for (let valor of valores) {
-                        baralho.push({ valor: valor, naipe: naipe, valorNumerico: valoresMap[valor] || parseInt(valor) });
+                        baralho.push({ valor: valor, naipe: naipe, valorNumerico: valoresMap.hasOwnProperty(valor) ? valoresMap [valor] : parseInt(valor) });
                     }
                 }
                 return baralho;
@@ -128,7 +154,7 @@
             function embaralhar(array) {
                 for (let i = array.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
+                    ([array [i], array [j]] = [array [j], array [i]]);
                 }
             }
 
@@ -138,20 +164,43 @@
                 pontuacao = 0;
                 pontuacaoElement.textContent = `Pontuação: ${pontuacao}`;
                 mensagemElement.textContent = '';
-                
                 cartaAtual = baralho.pop();
                 cardValueElement.textContent = cartaAtual.valor + ' ' + cartaAtual.naipe;
+                jogoAtivo = true;
+                btnIniciar.classList.add('disabled');
+                btnEncerrar.classList.remove('disabled');
+                perguntaElement.classList.remove('hidden');
+                botoesPalpite.classList.remove('hidden');
+            }
+
+            function encerrarJogo() {
+                jogoAtivo = false;
+                baralho = [];
+                cartaAtual = null;
+                cardValueElement.textContent = '?';
+                pontuacao = 0;
+                pontuacaoElement.textContent = `Pontuação: ${pontuacao}`;
+                mensagemElement.textContent = 'Jogo encerrado.';
+                btnIniciar.classList.remove('disabled');
+                btnEncerrar.classList.add('disabled');
+                perguntaElement.classList.add('hidden');
+                botoesPalpite.classList.add('hidden');
             }
 
             function verificarPalpite(palpite) {
+                if (!jogoAtivo) {
+                    mensagemElement.textContent = 'Clique em "Iniciar Jogo" para começar.';
+                    return;
+                }
+
                 if (baralho.length === 0) {
-                    mensagemElement.textContent = "Fim do baralho! Jogo reiniciado.";
-                    iniciarJogo();
+                    mensagemElement.textContent = "Fim do baralho! Jogo encerrado.";
+                    encerrarJogo();
                     return;
                 }
 
                 const proximaCarta = baralho.pop();
-                
+
                 const valorAtual = cartaAtual.valorNumerico;
                 const valorProxima = proximaCarta.valorNumerico;
 
@@ -179,13 +228,16 @@
                     pontuacaoElement.textContent = `Pontuação: ${pontuacao}`;
                     cartaAtual = proximaCarta;
 
-                }, 500); // tempo para a animação
+                }, 500); // Tempo para a animação
             }
 
+            btnIniciar.addEventListener('click', iniciarJogo);
+            btnEncerrar.addEventListener('click', encerrarJogo);
             btnMaior.addEventListener('click', () => verificarPalpite('maior'));
             btnMenor.addEventListener('click', () => verificarPalpite('menor'));
 
-            iniciarJogo();
+            // Inicialmente, o jogo não está ativo e a primeira carta está oculta
+            cardValueElement.textContent = '?';
         });
     </script>
 </body>
