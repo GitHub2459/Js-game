@@ -22,6 +22,8 @@
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 600px;
         }
         h1 {
             margin-bottom: 20px;
@@ -98,11 +100,30 @@
             pointer-events: none;
             opacity: 0.6;
         }
+        .prob-controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        .prob-controls label {
+            margin: 0 10px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Jogo de Probabilidade</h1>
+        
+        <div class="prob-controls">
+            <h3>Remover cartas do baralho:</h3>
+            <label><input type="checkbox" id="removeAces"> Ás</label>
+            <label><input type="checkbox" id="removeKings"> Rei</label>
+            <label><input type="checkbox" id="removeQueens"> Rainha</label>
+            <label><input type="checkbox" id="removeJacks"> Valete</label>
+        </div>
+
         <div class="game-controls">
             <button id="btnIniciar">Iniciar Jogo</button>
             <button id="btnEncerrar" class="disabled">Encerrar Jogo</button>
@@ -131,6 +152,12 @@
             const cartaAtualElement = document.getElementById('cartaAtual');
             const perguntaElement = document.getElementById('pergunta');
             const botoesPalpite = document.querySelector('.buttons');
+            const probControls = document.querySelector('.prob-controls');
+
+            const removeAces = document.getElementById('removeAces');
+            const removeKings = document.getElementById('removeKings');
+            const removeQueens = document.getElementById('removeQueens');
+            const removeJacks = document.getElementById('removeJacks');
 
             let baralho;
             let cartaAtual;
@@ -159,7 +186,23 @@
             }
 
             function iniciarJogo() {
-                baralho = criarBaralho();
+                let baralhoCompleto = criarBaralho();
+                
+                // Filtra as cartas com base nas opções do usuário
+                baralho = baralhoCompleto.filter(carta => {
+                    const valorCarta = carta.valor;
+                    if (removeAces.checked && valorCarta === 'A') return false;
+                    if (removeKings.checked && valorCarta === 'K') return false;
+                    if (removeQueens.checked && valorCarta === 'Q') return false;
+                    if (removeJacks.checked && valorCarta === 'J') return false;
+                    return true;
+                });
+                
+                if (baralho.length < 2) {
+                    mensagemElement.textContent = "Selecione menos cartas para remover. O baralho está muito pequeno.";
+                    return;
+                }
+
                 embaralhar(baralho);
                 pontuacao = 0;
                 pontuacaoElement.textContent = `Pontuação: ${pontuacao}`;
@@ -169,6 +212,7 @@
                 jogoAtivo = true;
                 btnIniciar.classList.add('disabled');
                 btnEncerrar.classList.remove('disabled');
+                probControls.classList.add('disabled'); // Desabilita as opções de prob.
                 perguntaElement.classList.remove('hidden');
                 botoesPalpite.classList.remove('hidden');
             }
@@ -183,6 +227,7 @@
                 mensagemElement.textContent = 'Jogo encerrado.';
                 btnIniciar.classList.remove('disabled');
                 btnEncerrar.classList.add('disabled');
+                probControls.classList.remove('disabled'); // Habilita as opções de prob.
                 perguntaElement.classList.add('hidden');
                 botoesPalpite.classList.add('hidden');
             }
@@ -236,7 +281,6 @@
             btnMaior.addEventListener('click', () => verificarPalpite('maior'));
             btnMenor.addEventListener('click', () => verificarPalpite('menor'));
 
-            // Inicialmente, o jogo não está ativo e a primeira carta está oculta
             cardValueElement.textContent = '?';
         });
     </script>
