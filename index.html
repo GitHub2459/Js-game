@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Probabilidade: Maior ou Menor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #006400; /* Verde escuro para o "feltro" */
+            color: white;
+            text-align: center;
+        }
+        .container {
+            background-color: rgba(0, 0, 0, 0.4);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .card {
+            width: 150px;
+            height: 220px;
+            background-color: #fff;
+            color: black;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4em;
+            margin: 20px auto;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            transition: transform 0.5s ease-in-out;
+        }
+        .card-value {
+            font-weight: bold;
+        }
+        .buttons {
+            margin-top: 20px;
+        }
+        .buttons button {
+            padding: 15px 30px;
+            margin: 0 10px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        #btnMaior {
+            background-color: #4CAF50;
+        }
+        #btnMaior:hover {
+            background-color: #45a049;
+        }
+        #btnMenor {
+            background-color: #f44336;
+        }
+        #btnMenor:hover {
+            background-color: #da190b;
+        }
+        #pontuacao, #mensagem {
+            font-size: 1.5em;
+            margin-top: 20px;
+        }
+        .hidden {
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.5s linear;
+        }
+        .fade-in {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Jogo de Probabilidade</h1>
+        <div id="pontuacao">Pontuação: 0</div>
+        <div class="card" id="cartaAtual">
+            <span class="card-value" id="cardValue">?</span>
+        </div>
+        <p>A próxima carta será maior ou menor?</p>
+        <div class="buttons">
+            <button id="btnMaior">MAIOR</button>
+            <button id="btnMenor">MENOR</button>
+        </div>
+        <p id="mensagem"></p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cardValueElement = document.getElementById('cardValue');
+            const pontuacaoElement = document.getElementById('pontuacao');
+            const mensagemElement = document.getElementById('mensagem');
+            const btnMaior = document.getElementById('btnMaior');
+            const btnMenor = document.getElementById('btnMenor');
+            const cartaAtualElement = document.getElementById('cartaAtual');
+
+            let baralho;
+            let cartaAtual;
+            let pontuacao = 0;
+
+            const valoresMap = { 'J': 11, 'Q': 12, 'K': 13, 'A': 14 };
+
+            function criarBaralho() {
+                const naipes = ['♠', '♥', '♦', '♣'];
+                const valores = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+                let baralho = [];
+                for (let naipe of naipes) {
+                    for (let valor of valores) {
+                        baralho.push({ valor: valor, naipe: naipe, valorNumerico: valoresMap[valor] || parseInt(valor) });
+                    }
+                }
+                return baralho;
+            }
+
+            function embaralhar(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            function iniciarJogo() {
+                baralho = criarBaralho();
+                embaralhar(baralho);
+                pontuacao = 0;
+                pontuacaoElement.textContent = `Pontuação: ${pontuacao}`;
+                mensagemElement.textContent = '';
+                
+                cartaAtual = baralho.pop();
+                cardValueElement.textContent = cartaAtual.valor + ' ' + cartaAtual.naipe;
+            }
+
+            function verificarPalpite(palpite) {
+                if (baralho.length === 0) {
+                    mensagemElement.textContent = "Fim do baralho! Jogo reiniciado.";
+                    iniciarJogo();
+                    return;
+                }
+
+                const proximaCarta = baralho.pop();
+                
+                const valorAtual = cartaAtual.valorNumerico;
+                const valorProxima = proximaCarta.valorNumerico;
+
+                let acertou = false;
+                if (palpite === 'maior' && valorProxima > valorAtual) {
+                    acertou = true;
+                } else if (palpite === 'menor' && valorProxima < valorAtual) {
+                    acertou = true;
+                }
+
+                cartaAtualElement.style.transform = 'rotateY(180deg)';
+
+                setTimeout(() => {
+                    cardValueElement.textContent = proximaCarta.valor + ' ' + proximaCarta.naipe;
+                    cartaAtualElement.style.transform = 'rotateY(0deg)';
+
+                    if (acertou) {
+                        pontuacao++;
+                        mensagemElement.textContent = "Você acertou!";
+                        mensagemElement.style.color = "#4CAF50";
+                    } else {
+                        mensagemElement.textContent = "Você errou!";
+                        mensagemElement.style.color = "#f44336";
+                    }
+                    pontuacaoElement.textContent = `Pontuação: ${pontuacao}`;
+                    cartaAtual = proximaCarta;
+
+                }, 500); // tempo para a animação
+            }
+
+            btnMaior.addEventListener('click', () => verificarPalpite('maior'));
+            btnMenor.addEventListener('click', () => verificarPalpite('menor'));
+
+            iniciarJogo();
+        });
+    </script>
+</body>
+</html>
