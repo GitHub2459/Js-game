@@ -3,286 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo de Probabilidade: Maior ou Menor</title>
+    <title>Jogo de Turno Simples</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #006400; /* Verde escuro para o "feltro" */
-            color: white;
-            text-align: center;
+            background-color: #2c3e50;
+            color: #ecf0f1;
         }
-        .container {
-            background-color: rgba(0, 0, 0, 0.4);
+
+        .game-container {
+            background-color: #34495e;
             padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            text-align: center;
             width: 90%;
             max-width: 600px;
         }
-        h1 {
-            margin-bottom: 20px;
-        }
-        .card {
-            width: 150px;
-            height: 220px;
-            background-color: #fff;
-            color: black;
-            border-radius: 10px;
+
+        .battlefield {
             display: flex;
-            justify-content: center;
+            justify-content: space-around;
+            align-items: flex-end;
+            margin: 20px 0;
+        }
+
+        .character-box {
+            background-color: #4a627a;
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 200px;
+        }
+
+        .health-bar-container {
+            background-color: #7f8c8d;
+            height: 20px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .health-bar {
+            height: 100%;
+            width: 100%; /* Começa com 100% de vida */
+            background-color: #e74c3c;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .log {
+            background-color: #2c3e50;
+            padding: 10px;
+            border-radius: 5px;
+            height: 50px;
+            display: flex;
             align-items: center;
-            font-size: 4em;
-            margin: 20px auto;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            transition: transform 0.5s ease-in-out;
-        }
-        .card-value {
-            font-weight: bold;
-        }
-        .game-controls {
+            justify-content: center;
             margin-top: 20px;
-            margin-bottom: 20px;
         }
-        .game-controls button, .buttons button {
-            padding: 15px 30px;
-            margin: 0 10px;
-            font-size: 1.2em;
+
+        .controls {
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
             cursor: pointer;
             border: none;
-            border-radius: 8px;
+            border-radius: 5px;
             color: white;
-            transition: background-color 0.3s ease;
+            background-color: #3498db;
+            transition: background-color 0.3s;
         }
-        #btnIniciar {
-            background-color: #2196F3; /* Azul */
+
+        button:hover {
+            background-color: #2980b9;
         }
-        #btnIniciar:hover {
-            background-color: #1976D2;
-        }
-        #btnEncerrar {
-            background-color: #f44336; /* Vermelho */
-        }
-        #btnEncerrar:hover {
-            background-color: #da190b;
-        }
-        #btnMaior {
-            background-color: #4CAF50; /* Verde */
-        }
-        #btnMaior:hover {
-            background-color: #45a049;
-        }
-        #btnMenor {
-            background-color: #f44336; /* Vermelho */
-        }
-        #btnMenor:hover {
-            background-color: #da190b;
-        }
-        #pontuacao, #mensagem {
-            font-size: 1.5em;
-            margin-top: 20px;
-        }
+
         .hidden {
-            visibility: hidden;
-            opacity: 0;
-            transition: visibility 0s, opacity 0.5s linear;
-        }
-        .fade-in {
-            visibility: visible;
-            opacity: 1;
-        }
-        .disabled {
-            pointer-events: none;
-            opacity: 0.6;
-        }
-        .prob-controls {
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-        }
-        .prob-controls label {
-            margin: 0 10px;
-            cursor: pointer;
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Jogo de Probabilidade</h1>
+    <div class="game-container">
+        <h1>Jogo de Batalha</h1>
         
-        <div class="prob-controls">
-            <h3>Remover cartas do baralho:</h3>
-            <label><input type="checkbox" id="removeAces"> Ás</label>
-            <label><input type="checkbox" id="removeKings"> Rei</label>
-            <label><input type="checkbox" id="removeQueens"> Rainha</label>
-            <label><input type="checkbox" id="removeJacks"> Valete</label>
+        <div class="battlefield">
+            <div class="character-box player">
+                <h2 id="player-name">Herói</h2>
+                <div class="health-bar-container">
+                    <div id="player-health-bar" class="health-bar"></div>
+                </div>
+                <p id="player-health-text">Vida: 100/100</p>
+            </div>
+            
+            <div class="character-box enemy">
+                <h2 id="enemy-name">Orc</h2>
+                <div class="health-bar-container">
+                    <div id="enemy-health-bar" class="health-bar"></div>
+                </div>
+                <p id="enemy-health-text">Vida: 100/100</p>
+            </div>
         </div>
-
-        <div class="game-controls">
-            <button id="btnIniciar">Iniciar Jogo</button>
-            <button id="btnEncerrar" class="disabled">Encerrar Jogo</button>
+        
+        <div class="log">
+            <p id="game-log">A batalha começou! É sua vez.</p>
         </div>
-        <div id="pontuacao">Pontuação: 0</div>
-        <div class="card" id="cartaAtual">
-            <span class="card-value" id="cardValue">?</span>
+        
+        <div class="controls">
+            <button id="attack-btn">Atacar!</button>
+            <button id="restart-btn" class="hidden">Reiniciar</button>
         </div>
-        <p id="pergunta" class="hidden">A próxima carta será maior ou menor?</p>
-        <div class="buttons hidden">
-            <button id="btnMaior">MAIOR</button>
-            <button id="btnMenor">MENOR</button>
-        </div>
-        <p id="mensagem"></p>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const cardValueElement = document.getElementById('cardValue');
-            const pontuacaoElement = document.getElementById('pontuacao');
-            const mensagemElement = document.getElementById('mensagem');
-            const btnIniciar = document.getElementById('btnIniciar');
-            const btnEncerrar = document.getElementById('btnEncerrar');
-            const btnMaior = document.getElementById('btnMaior');
-            const btnMenor = document.getElementById('btnMenor');
-            const cartaAtualElement = document.getElementById('cartaAtual');
-            const perguntaElement = document.getElementById('pergunta');
-            const botoesPalpite = document.querySelector('.buttons');
-            const probControls = document.querySelector('.prob-controls');
+        // Referências aos elementos do DOM
+        const playerHealthBar = document.getElementById('player-health-bar');
+        const playerHealthText = document.getElementById('player-health-text');
+        const enemyHealthBar = document.getElementById('enemy-health-bar');
+        const enemyHealthText = document.getElementById('enemy-health-text');
+        const gameLog = document.getElementById('game-log');
+        const attackBtn = document.getElementById('attack-btn');
+        const restartBtn = document.getElementById('restart-btn');
 
-            const removeAces = document.getElementById('removeAces');
-            const removeKings = document.getElementById('removeKings');
-            const removeQueens = document.getElementById('removeQueens');
-            const removeJacks = document.getElementById('removeJacks');
+        // Variáveis do jogo
+        const maxHealth = 100;
+        let playerHealth;
+        let enemyHealth;
+        let isPlayerTurn = true;
+        let gameOver = false;
 
-            let baralho;
-            let cartaAtual;
-            let pontuacao = 0;
-            let jogoAtivo = false;
+        // Função para atualizar a interface gráfica
+        function updateUI() {
+            // Atualiza a barra de vida e o texto do jogador
+            const playerHealthPercentage = (playerHealth / maxHealth) * 100;
+            playerHealthBar.style.width = playerHealthPercentage + '%';
+            playerHealthText.textContent = `Vida: ${playerHealth}/${maxHealth}`;
 
-            const valoresMap = { 'J': 11, 'Q': 12, 'K': 13, 'A': 14 };
+            // Atualiza a barra de vida e o texto do inimigo
+            const enemyHealthPercentage = (enemyHealth / maxHealth) * 100;
+            enemyHealthBar.style.width = enemyHealthPercentage + '%';
+            enemyHealthText.textContent = `Vida: ${enemyHealth}/${maxHealth}`;
+        }
 
-            function criarBaralho() {
-                const naipes = ['♠', '♥', '♦', '♣'];
-                const valores = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-                let baralho = [];
-                for (let naipe of naipes) {
-                    for (let valor of valores) {
-                        baralho.push({ valor: valor, naipe: naipe, valorNumerico: valoresMap.hasOwnProperty(valor) ? valoresMap [valor] : parseInt(valor) });
-                    }
-                }
-                return baralho;
+        // Função para exibir mensagens no log do jogo
+        function logMessage(message) {
+            gameLog.textContent = message;
+        }
+
+        // Função para verificar se o jogo terminou
+        function checkGameOver() {
+            if (playerHealth <= 0) {
+                logMessage("Você foi derrotado! Fim de jogo.");
+                gameOver = true;
+            } else if (enemyHealth <= 0) {
+                logMessage("Você venceu! O orc foi derrotado!");
+                gameOver = true;
             }
 
-            function embaralhar(array) {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    ([array [i], array [j]] = [array [j], array [i]]);
-                }
+            if (gameOver) {
+                attackBtn.classList.add('hidden');
+                restartBtn.classList.remove('hidden');
             }
+        }
 
-            function iniciarJogo() {
-                let baralhoCompleto = criarBaralho();
-                
-                // Filtra as cartas com base nas opções do usuário
-                baralho = baralhoCompleto.filter(carta => {
-                    const valorCarta = carta.valor;
-                    if (removeAces.checked && valorCarta === 'A') return false;
-                    if (removeKings.checked && valorCarta === 'K') return false;
-                    if (removeQueens.checked && valorCarta === 'Q') return false;
-                    if (removeJacks.checked && valorCarta === 'J') return false;
-                    return true;
-                });
-                
-                if (baralho.length < 2) {
-                    mensagemElement.textContent = "Selecione menos cartas para remover. O baralho está muito pequeno.";
-                    return;
-                }
+        // Lógica do turno do jogador
+        function playerAttack() {
+            if (!isPlayerTurn || gameOver) return;
 
-                embaralhar(baralho);
-                pontuacao = 0;
-                pontuacaoElement.textContent = `Pontuação: ${pontuacao}`;
-                mensagemElement.textContent = '';
-                cartaAtual = baralho.pop();
-                cardValueElement.textContent = cartaAtual.valor + ' ' + cartaAtual.naipe;
-                jogoAtivo = true;
-                btnIniciar.classList.add('disabled');
-                btnEncerrar.classList.remove('disabled');
-                probControls.classList.add('disabled'); // Desabilita as opções de prob.
-                perguntaElement.classList.remove('hidden');
-                botoesPalpite.classList.remove('hidden');
-            }
+            // Causa dano aleatório no inimigo (entre 10 e 20)
+            const damage = Math.floor(Math.random() * 11) + 10;
+            enemyHealth -= damage;
+            logMessage(`Você atacou o Orc e causou ${damage} de dano!`);
 
-            function encerrarJogo() {
-                jogoAtivo = false;
-                baralho = [];
-                cartaAtual = null;
-                cardValueElement.textContent = '?';
-                pontuacao = 0;
-                pontuacaoElement.textContent = `Pontuação: ${pontuacao}`;
-                mensagemElement.textContent = 'Jogo encerrado.';
-                btnIniciar.classList.remove('disabled');
-                btnEncerrar.classList.add('disabled');
-                probControls.classList.remove('disabled'); // Habilita as opções de prob.
-                perguntaElement.classList.add('hidden');
-                botoesPalpite.classList.add('hidden');
-            }
+            // Garante que a vida não fique abaixo de zero
+            if (enemyHealth < 0) enemyHealth = 0;
 
-            function verificarPalpite(palpite) {
-                if (!jogoAtivo) {
-                    mensagemElement.textContent = 'Clique em "Iniciar Jogo" para começar.';
-                    return;
-                }
+            updateUI();
+            checkGameOver();
 
-                if (baralho.length === 0) {
-                    mensagemElement.textContent = "Fim do baralho! Jogo encerrado.";
-                    encerrarJogo();
-                    return;
-                }
+            // Passa o turno para o inimigo após um pequeno atraso
+            isPlayerTurn = false;
+            setTimeout(enemyAttack, 1500);
+        }
 
-                const proximaCarta = baralho.pop();
+        // Lógica do turno do inimigo
+        function enemyAttack() {
+            if (gameOver) return;
 
-                const valorAtual = cartaAtual.valorNumerico;
-                const valorProxima = proximaCarta.valorNumerico;
+            // Causa dano aleatório no jogador (entre 5 e 15)
+            const damage = Math.floor(Math.random() * 11) + 5;
+            playerHealth -= damage;
+            logMessage(`O Orc atacou e causou ${damage} de dano!`);
 
-                let acertou = false;
-                if (palpite === 'maior' && valorProxima > valorAtual) {
-                    acertou = true;
-                } else if (palpite === 'menor' && valorProxima < valorAtual) {
-                    acertou = true;
-                }
+            // Garante que a vida não fique abaixo de zero
+            if (playerHealth < 0) playerHealth = 0;
 
-                cartaAtualElement.style.transform = 'rotateY(180deg)';
+            updateUI();
+            checkGameOver();
 
-                setTimeout(() => {
-                    cardValueElement.textContent = proximaCarta.valor + ' ' + proximaCarta.naipe;
-                    cartaAtualElement.style.transform = 'rotateY(0deg)';
+            // Passa o turno de volta para o jogador
+            isPlayerTurn = true;
+            logMessage("É a sua vez!");
+        }
 
-                    if (acertou) {
-                        pontuacao++;
-                        mensagemElement.textContent = "Você acertou!";
-                        mensagemElement.style.color = "#4CAF50";
-                    } else {
-                        mensagemElement.textContent = "Você errou!";
-                        mensagemElement.style.color = "#f44336";
-                    }
-                    pontuacaoElement.textContent = `Pontuação: ${pontuacao}`;
-                    cartaAtual = proximaCarta;
+        // Função para iniciar ou reiniciar o jogo
+        function startGame() {
+            playerHealth = maxHealth;
+            enemyHealth = maxHealth;
+            isPlayerTurn = true;
+            gameOver = false;
+            
+            updateUI();
+            logMessage("A batalha começou! É sua vez.");
+            
+            attackBtn.classList.remove('hidden');
+            restartBtn.classList.add('hidden');
+        }
 
-                }, 500); // Tempo para a animação
-            }
+        // Adiciona os eventos aos botões
+        attackBtn.addEventListener('click', playerAttack);
+        restartBtn.addEventListener('click', startGame);
 
-            btnIniciar.addEventListener('click', iniciarJogo);
-            btnEncerrar.addEventListener('click', encerrarJogo);
-            btnMaior.addEventListener('click', () => verificarPalpite('maior'));
-            btnMenor.addEventListener('click', () => verificarPalpite('menor'));
-
-            cardValueElement.textContent = '?';
-        });
+        // Inicia o jogo quando a página carrega
+        startGame();
     </script>
 </body>
 </html>
