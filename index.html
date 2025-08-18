@@ -1,327 +1,289 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo de Turno Simples</title>
+    <title>Gráfico: Culto à Beleza e Redes Sociais</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
+        
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            background-color: #2c3e50;
-            color: #ecf0f1;
+            background-color: #0a0a1a;
+            color: #e0e0e0;
+            overflow-x: hidden;
         }
-
-        .game-container {
-            background-color: #34495e;
+        
+        .chart-container {
+            width: 85%;
+            max-width: 950px;
             padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-            text-align: center;
-            width: 90%;
-            max-width: 600px;
-            position: relative; /* Para o modal */
+            background-color: rgba(15, 15, 35, 0.9);
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.5),
+                        0 0 40px rgba(138, 43, 226, 0.3),
+                        inset 0 0 15px rgba(138, 43, 226, 0.3);
+            border-radius: 12px;
+            border: 1px solid #8a2be2;
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(5px);
         }
-
+        
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #8a2be2, #ff00ff, #00ffff, #8a2be2);
+            background-size: 400%;
+            z-index: -1;
+            border-radius: 14px;
+            opacity: 0.7;
+            animation: glowing-border 8s linear infinite;
+        }
+        
+        @keyframes glowing-border {
+            0% { background-position: 0 0; }
+            50% { background-position: 400% 0; }
+            100% { background-position: 0 0; }
+        }
+        
         h1 {
-            margin-bottom: 20px;
+            text-align: center;
+            color: #d8b4fe;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.2rem;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(216, 180, 254, 0.7),
+                         0 0 20px rgba(216, 180, 254, 0.5);
+            letter-spacing: 1px;
         }
-
-        .battlefield {
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-end;
-            margin: 20px 0;
-        }
-
-        .character-box {
-            background-color: #4a627a;
-            padding: 15px;
-            border-radius: 8px;
-            min-width: 200px;
-        }
-
-        .health-bar-container {
-            background-color: #7f8c8d;
-            height: 20px;
-            border-radius: 5px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-
-        .health-bar {
-            height: 100%;
-            width: 100%; /* Começa com 100% de vida */
-            background-color: #e74c3c;
-            transition: width 0.5s ease-in-out;
-        }
-
-        .log {
-            background-color: #2c3e50;
-            padding: 10px;
-            border-radius: 5px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        
+        .source-caption {
+            text-align: right;
+            font-size: 0.8em;
+            color: #b19cd9;
             margin-top: 20px;
+            font-style: italic;
         }
-
-        .controls {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 1em;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            color: white;
-            background-color: #3498db;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #2980b9;
-        }
-
-        #info-btn {
-            background-color: #f1c40f;
-        }
-
-        #info-btn:hover {
-            background-color: #f39c12;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        /* Estilos do Modal */
-        .modal-overlay {
+        
+        /* Efeitos de partículas para fundo futurista */
+        .particles {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            z-index: -2;
+            overflow: hidden;
         }
-
-        .modal-content {
-            background-color: #34495e;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-            max-width: 500px;
-            text-align: left;
-            position: relative;
-        }
-
-        .modal-content h3 {
-            border-bottom: 2px solid #5b7591;
-            padding-bottom: 10px;
-        }
-
-        .close-modal-btn {
+        
+        .particle {
             position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 1.5em;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-            background: none;
-            color: white;
+            width: 2px;
+            height: 2px;
+            background: rgba(138, 43, 226, 0.7);
+            border-radius: 50%;
+            animation: float linear infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <h1>Jogo de Batalha</h1>
-        
-        <div class="battlefield">
-            <div class="character-box player">
-                <h2 id="player-name">Herói</h2>
-                <div class="health-bar-container">
-                    <div id="player-health-bar" class="health-bar"></div>
-                </div>
-                <p id="player-health-text">Vida: 100/100</p>
-            </div>
-            
-            <div class="character-box enemy">
-                <h2 id="enemy-name">Orc</h2>
-                <div class="health-bar-container">
-                    <div id="enemy-health-bar" class="health-bar"></div>
-                </div>
-                <p id="enemy-health-text">Vida: 100/100</p>
-            </div>
-        </div>
-        
-        <div class="log">
-            <p id="game-log">A batalha começou! É sua vez.</p>
-        </div>
-        
-        <div class="controls">
-            <button id="attack-btn">Atacar!</button>
-            <button id="restart-btn" class="hidden">Reiniciar</button>
-            <button id="info-btn">O que é isso?</button>
-        </div>
-    </div>
+    <!-- Efeito de partículas -->
+    <div class="particles" id="particles"></div>
 
-    <div id="info-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <button class="close-modal-btn">&times;</button>
-            <h3>Como Funciona o Jogo?</h3>
-            <p>Este é um jogo de batalha simples e por turnos.</p>
-            <ul>
-                <li><strong>Barras de Vida:</strong> As barras vermelhas mostram a saúde do Herói (à esquerda) e do Orc (à direita). A vida máxima é 100.</li>
-                <li><strong>Log de Batalha:</strong> A caixa preta no centro mostra o que acontece a cada turno.</li>
-                <li><strong>Botões de Controle:</strong>
-                    <ul>
-                        <li><strong>Atacar!:</strong> Inicia seu turno e causa dano ao inimigo.</li>
-                        <li><strong>Reiniciar:</strong> Reinicia o jogo quando a batalha termina.</li>
-                        <li><strong>O que é isso?:</strong> Exibe esta explicação.</li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
+    <div class="chart-container">
+        <h1>INFLUÊNCIA DAS REDES SOCIAIS NA PERCEPÇÃO DE BELEZA</h1>
+        <canvas id="graficoBelezaRedesSociais"></canvas>
+
+        <p class="source-caption">
+            Fonte: Dados compilados de tendências observadas em pesquisas de mercado e estudos acadêmicos.
+        </p>
     </div>
 
     <script>
-        // Referências aos elementos do DOM
-        const playerHealthBar = document.getElementById('player-health-bar');
-        const playerHealthText = document.getElementById('player-health-text');
-        const enemyHealthBar = document.getElementById('enemy-health-bar');
-        const enemyHealthText = document.getElementById('enemy-health-text');
-        const gameLog = document.getElementById('game-log');
-        const attackBtn = document.getElementById('attack-btn');
-        const restartBtn = document.getElementById('restart-btn');
-
-        // Referências aos novos elementos do modal
-        const infoBtn = document.getElementById('info-btn');
-        const infoModal = document.getElementById('info-modal');
-        const closeModalBtn = document.querySelector('.close-modal-btn');
-
-        // Variáveis do jogo
-        const maxHealth = 100;
-        let playerHealth;
-        let enemyHealth;
-        let isPlayerTurn = true;
-        let gameOver = false;
-
-        // Função para atualizar a interface gráfica
-        function updateUI() {
-            // Atualiza a barra de vida e o texto do jogador
-            const playerHealthPercentage = (playerHealth / maxHealth) * 100;
-            playerHealthBar.style.width = playerHealthPercentage + '%';
-            playerHealthText.textContent = `Vida: ${playerHealth}/${maxHealth}`;
-
-            // Atualiza a barra de vida e o texto do inimigo
-            const enemyHealthPercentage = (enemyHealth / maxHealth) * 100;
-            enemyHealthBar.style.width = enemyHealthPercentage + '%';
-            enemyHealthText.textContent = `Vida: ${enemyHealth}/${maxHealth}`;
-        }
-
-        // Função para exibir mensagens no log do jogo
-        function logMessage(message) {
-            gameLog.textContent = message;
-        }
-
-        // Função para verificar se o jogo terminou
-        function checkGameOver() {
-            if (playerHealth <= 0) {
-                logMessage("Você foi derrotado! Fim de jogo.");
-                gameOver = true;
-            } else if (enemyHealth <= 0) {
-                logMessage("Você venceu! O orc foi derrotado!");
-                gameOver = true;
-            }
-
-            if (gameOver) {
-                attackBtn.classList.add('hidden');
-                restartBtn.classList.remove('hidden');
+        // Criar partículas
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Posição aleatória
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.top = Math.random() * 100 + 'vh';
+                
+                // Tamanho aleatório
+                const size = Math.random() * 3 + 1;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                
+                // Opacidade aleatória
+                particle.style.opacity = Math.random() * 0.7 + 0.3;
+                
+                // Duração da animação aleatória
+                const duration = Math.random() * 20 + 10;
+                particle.style.animationDuration = duration + 's';
+                
+                // Atraso aleatório
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                
+                particlesContainer.appendChild(particle);
             }
         }
+        
+        // Chamar a função para criar partículas
+        createParticles();
 
-        // Lógica do turno do jogador
-        function playerAttack() {
-            if (!isPlayerTurn || gameOver) return;
+        // 1. Obter o contexto do canvas
+        const ctx = document.getElementById('graficoBelezaRedesSociais').getContext('2d');
 
-            // Causa dano aleatório no inimigo (entre 10 e 20)
-            const damage = Math.floor(Math.random() * 11) + 10;
-            enemyHealth -= damage;
-            logMessage(`Você atacou o Orc e causou ${damage} de dano!`);
+        // 2. Definir os dados para o gráfico
+        const labels = [
+            'Compraram produtos de beleza após ver influenciadores/anúncios',
+            'Seguem perfis de beleza para se informar sobre tendências',
+            'Sentem pressão para atingir um padrão de beleza visto online',
+            'Aumentaram a preocupação com a aparência após aderir às redes sociais',
+            'Consideraram ou realizaram procedimento estético por influência das redes'
+        ];
 
-            // Garante que a vida não fique abaixo de zero
-            if (enemyHealth < 0) enemyHealth = 0;
+        const data = {
+            labels: labels,
+            datasets: [{
+                label: 'Porcentagem de Usuários (%)',
+                data: [85, 80, 75, 70, 60],
+                backgroundColor: [
+                    'rgba(138, 43, 226, 0.7)',
+                    'rgba(148, 0, 211, 0.7)',
+                    'rgba(186, 85, 211, 0.7)',
+                    'rgba(147, 112, 219, 0.7)',
+                    'rgba(153, 50, 204, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(138, 43, 226, 1)',
+                    'rgba(148, 0, 211, 1)',
+                    'rgba(186, 85, 211, 1)',
+                    'rgba(147, 112, 219, 1)',
+                    'rgba(153, 50, 204, 1)'
+                ],
+                borderWidth: 2,
+                hoverBackgroundColor: [
+                    'rgba(138, 43, 226, 0.9)',
+                    'rgba(148, 0, 211, 0.9)',
+                    'rgba(186, 85, 211, 0.9)',
+                    'rgba(147, 112, 219, 0.9)',
+                    'rgba(153, 50, 204, 0.9)'
+                ],
+                hoverBorderColor: [
+                    'rgba(255, 255, 255, 1)',
+                    'rgba(255, 255, 255, 1)',
+                    'rgba(255, 255, 255, 1)',
+                    'rgba(255, 255, 255, 1)',
+                    'rgba(255, 255, 255, 1)'
+                ],
+                hoverBorderWidth: 3
+            }]
+        };
 
-            updateUI();
-            checkGameOver();
+        // 3. Configurar as opções do gráfico
+        const options = {
+            indexAxis: 'y', 
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: {
+                        color: 'rgba(138, 43, 226, 0.2)',
+                        lineWidth: 1
+                    },
+                    ticks: {
+                        color: '#d8b4fe',
+                        font: {
+                            size: 12,
+                            family: 'Roboto'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Porcentagem de Usuários (%)',
+                        color: '#d8b4fe',
+                        font: {
+                            size: 14,
+                            family: 'Orbitron',
+                            weight: 'bold'
+                        }
+                    }
+                },
+                y: {
+                   grid: {
+                       color: 'rgba(138, 43, 226, 0.1)'
+                   },
+                   ticks: {
+                       color: '#e0e0e0',
+                       font: {
+                           size: 12,
+                           family: 'Roboto'
+                       }
+                   }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 15, 35, 0.95)',
+                    titleColor: '#d8b4fe',
+                    bodyColor: '#e0e0e0',
+                    borderColor: '#8a2be2',
+                    borderWidth: 2,
+                    cornerRadius: 8,
+                    padding: 12,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.x !== null) {
+                                label += context.parsed.x + '%';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            responsive: true,
+            maintainAspectRatio: true,
+            animation: {
+                duration: 1500,
+                easing: 'easeOutQuart'
+            }
+        };
 
-            // Passa o turno para o inimigo após um pequeno atraso
-            isPlayerTurn = false;
-            setTimeout(enemyAttack, 1500);
-        }
-
-        // Lógica do turno do inimigo
-        function enemyAttack() {
-            if (gameOver) return;
-
-            // Causa dano aleatório no jogador (entre 5 e 15)
-            const damage = Math.floor(Math.random() * 11) + 5;
-            playerHealth -= damage;
-            logMessage(`O Orc atacou e causou ${damage} de dano!`);
-
-            // Garante que a vida não fique abaixo de zero
-            if (playerHealth < 0) playerHealth = 0;
-
-            updateUI();
-            checkGameOver();
-
-            // Passa o turno de volta para o jogador
-            isPlayerTurn = true;
-            logMessage("É a sua vez!");
-        }
-
-        // Função para iniciar ou reiniciar o jogo
-        function startGame() {
-            playerHealth = maxHealth;
-            enemyHealth = maxHealth;
-            isPlayerTurn = true;
-            gameOver = false;
-            
-            updateUI();
-            logMessage("A batalha começou! É sua vez.");
-            
-            attackBtn.classList.remove('hidden');
-            restartBtn.classList.add('hidden');
-        }
-
-        // Funções para o modal de informações
-        function toggleInfoModal() {
-            infoModal.classList.toggle('hidden');
-        }
-
-        // Adiciona os eventos aos botões
-        attackBtn.addEventListener('click', playerAttack);
-        restartBtn.addEventListener('click', startGame);
-        infoBtn.addEventListener('click', toggleInfoModal);
-        closeModalBtn.addEventListener('click', toggleInfoModal);
-
-        // Inicia o jogo quando a página carrega
-        startGame();
+        // 4. Criar a instância do gráfico
+        const meuGrafico = new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: options
+        });
     </script>
+
 </body>
 </html>
